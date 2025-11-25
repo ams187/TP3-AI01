@@ -5,16 +5,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* Structure de donnees */
-typedef struct s_processus s_processus;
-struct s_processus {
+/* Structure de processus */
+typedef struct s_processus {
     int pid;
     int arrivee;
     int duree;
     struct s_processus *suivant;
-};
+} t_processus;
 
-typedef s_processus t_processus;
+/* Structure de file optimisee */
+typedef struct {
+    t_processus* tete;
+    t_processus* queue;
+    int taille;
+} t_file;
 
 /* Structure pour stocker une execution */
 typedef struct {
@@ -31,11 +35,11 @@ void free_processus(t_processus* p);
 t_processus* charger_processus(char* nom_fichier, int* nb_processus);
 
 /* Fonctions FIFO (FCFS) */
-t_processus* fifo_init();
-t_processus* fifo_clear(t_processus* file);
-int fifo_vide(t_processus* file);
-t_processus* fifo_enfiler(t_processus* file, t_processus* p);
-t_processus* fifo_defiler(t_processus** file);
+t_file* fifo_init();
+void fifo_clear(t_file* file);
+int fifo_vide(t_file* file);
+void fifo_enfiler(t_file* file, t_processus* p);
+t_processus* fifo_defiler(t_file* file);
 void simuler_fcfs(t_processus* tableau, int nb_processus);
 
 /* Fonctions liste triee (SJF) */
@@ -47,8 +51,10 @@ t_processus* lsorted_extraire_premier(t_processus** liste);
 void simuler_sjf(t_processus* tableau, int nb_processus);
 
 /* Fonctions pour le diagramme de Gantt */
-int simuler_fcfs_gantt(t_processus* tableau, int nb_processus, t_execution* exec);
-int simuler_sjf_gantt(t_processus* tableau, int nb_processus, t_execution* exec);
+int simuler_fcfs_gantt(t_processus* tableau, int nb_processus, 
+                       t_execution* exec);
+int simuler_sjf_gantt(t_processus* tableau, int nb_processus, 
+                      t_execution* exec);
 void afficher_gantt(t_processus* tableau, int nb_processus);
 
 #endif
