@@ -382,18 +382,39 @@ int simuler_sjf_gantt(t_processus* tableau, int nb_processus,
     return nb_exec;
 }
 
+
+
+
+
 /* Complexite : O(n^2 + T) */
 void afficher_gantt(t_processus* tableau, int nb_processus) {
-    t_execution exec_fcfs[100];
-    t_execution exec_sjf[100];
+    // Allocation dynamique
+    t_execution* exec_fcfs = malloc(nb_processus * sizeof(t_execution));
+    t_execution* exec_sjf = malloc(nb_processus * sizeof(t_execution));
+
+    if (exec_fcfs == NULL || exec_sjf == NULL) {
+        fprintf(stderr, "Erreur allocation memoire (exec)\n");
+        free(exec_fcfs); // On free au cas où l'un des deux a marché
+        free(exec_sjf);
+        return;
+    }
+
     
     printf("\n=== Comparaison FCFS vs SJF ===\n");
     
     int nb_exec_fcfs = simuler_fcfs_gantt(tableau, nb_processus, exec_fcfs);
     int nb_exec_sjf = simuler_sjf_gantt(tableau, nb_processus, exec_sjf);
     
-    int temps_max = exec_fcfs[nb_exec_fcfs - 1].fin;
-    if (exec_sjf[nb_exec_sjf - 1].fin > temps_max) {
+    // Sécurité : si aucun processus, on évite de lire exec[-1]
+    if (nb_exec_fcfs == 0 && nb_exec_sjf == 0) {
+        free(exec_fcfs);
+        free(exec_sjf);
+        return;
+    }
+
+    int temps_max = 0;
+    if (nb_exec_fcfs > 0) temps_max = exec_fcfs[nb_exec_fcfs - 1].fin;
+    if (nb_exec_sjf > 0 && exec_sjf[nb_exec_sjf - 1].fin > temps_max) {
         temps_max = exec_sjf[nb_exec_sjf - 1].fin;
     }
     
@@ -402,22 +423,26 @@ void afficher_gantt(t_processus* tableau, int nb_processus) {
     int* arr_display = calloc(temps_max, sizeof(int));
     
     if (!fcfs_display || !sjf_display || !arr_display) {
-        fprintf(stderr, "Erreur allocation memoire\n");
+        fprintf(stderr, "Erreur allocation memoire (display)\n");
+        // On n'oublie pas de tout libérer
+        free(exec_fcfs);
+        free(exec_sjf);
         free(fcfs_display);
         free(sjf_display);
         free(arr_display);
         return;
     }
     
+    
     for (int j = 0; j < nb_exec_fcfs; j++) {
         for (int t = exec_fcfs[j].debut; t < exec_fcfs[j].fin; t++) {
-            fcfs_display[t] = exec_fcfs[j].pid;
+            if (t < temps_max) fcfs_display[t] = exec_fcfs[j].pid;
         }
     }
     
     for (int j = 0; j < nb_exec_sjf; j++) {
         for (int t = exec_sjf[j].debut; t < exec_sjf[j].fin; t++) {
-            sjf_display[t] = exec_sjf[j].pid;
+            if (t < temps_max) sjf_display[t] = exec_sjf[j].pid;
         }
     }
     
@@ -427,46 +452,42 @@ void afficher_gantt(t_processus* tableau, int nb_processus) {
         }
     }
     
+
     printf("\nArr. : ");
     for (int i = 0; i < temps_max; i++) {
-        if (arr_display[i] > 0) {
-            printf("^  ");
-        } else {
-            printf("   ");
-        }
+        if (arr_display[i] > 0) printf("^  ");
+        else printf("   ");
     }
     printf("\n");
     
     printf("FCFS : ");
     for (int i = 0; i < temps_max; i++) {
-        if (fcfs_display[i] > 0) {
-            printf("\033[0;3%dmP%d\033[0m", 
-                   (fcfs_display[i] % 6) + 1, fcfs_display[i]);
-        } else {
-            printf("   ");
-        }
+        if (fcfs_display[i] > 0) 
+            printf("\033[0;3%dmP%d\033[0m", (fcfs_display[i] % 6) + 1, fcfs_display[i]);
+        else printf("   ");
     }
     printf("\n");
     
     printf("SJF  : ");
     for (int i = 0; i < temps_max; i++) {
-        if (sjf_display[i] > 0) {
-            printf("\033[0;3%dmP%d\033[0m", 
-                   (sjf_display[i] % 6) + 1, sjf_display[i]);
-        } else {
-            printf("   ");
-        }
+        if (sjf_display[i] > 0) 
+            printf("\033[0;3%dmP%d\033[0m", (sjf_display[i] % 6) + 1, sjf_display[i]);
+        else printf("   ");
     }
     printf("\n");
     
     printf("\nLegende : ");
     for (int i = 0; i < nb_processus; i++) {
-        printf("\033[0;3%dmP%d\033[0m ", 
-               (tableau[i].pid % 6) + 1, tableau[i].pid);
+        printf("\033[0;3%dmP%d\033[0m ", (tableau[i].pid % 6) + 1, tableau[i].pid);
     }
     printf("\n");
+    
+    // ET ici , on oublie aps de  tout libérer
+    free(exec_fcfs);
+    free(exec_sjf);
     
     free(fcfs_display);
     free(sjf_display);
     free(arr_display);
 }
+
