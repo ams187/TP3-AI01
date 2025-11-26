@@ -384,11 +384,11 @@ int simuler_sjf_gantt(t_processus* tableau, int nb_processus,
 
 
 
-
-
 /* Complexite : O(n^2 + T) */
 void afficher_gantt(t_processus* tableau, int nb_processus) {
     // Allocation dynamique
+    
+    // Ici, on a un historique des executions
     t_execution* exec_fcfs = malloc(nb_processus * sizeof(t_execution));
     t_execution* exec_sjf = malloc(nb_processus * sizeof(t_execution));
 
@@ -448,31 +448,43 @@ void afficher_gantt(t_processus* tableau, int nb_processus) {
     
     for (int k = 0; k < nb_processus; k++) {
         if (tableau[k].arrivee < temps_max) {
-            arr_display[tableau[k].arrivee] = tableau[k].pid;
+            arr_display[tableau[k].arrivee] = 1; // Marque juste la présence
         }
     }
     
 
+    // Affichage de la ligne des arrivées
     printf("\nArr. : ");
     for (int i = 0; i < temps_max; i++) {
-        if (arr_display[i] > 0) printf("^  ");
-        else printf("   ");
+        if (arr_display[i]) {
+            printf("^  "); // "^" + 2 espaces = 3 caractères
+        } else {
+            printf("   "); // 3 espaces
+        }
     }
     printf("\n");
     
+    // Affichage FCFS
     printf("FCFS : ");
     for (int i = 0; i < temps_max; i++) {
-        if (fcfs_display[i] > 0) 
+        if (fcfs_display[i] > 0) {
             printf("\033[0;3%dmP%d\033[0m", (fcfs_display[i] % 6) + 1, fcfs_display[i]);
-        else printf("   ");
+            printf(" "); // Ajouter 1 espace après pour avoir 3 caractères au total
+        } else {
+            printf("   "); // 3 espaces
+        }
     }
     printf("\n");
     
+    // Affichage SJF
     printf("SJF  : ");
     for (int i = 0; i < temps_max; i++) {
-        if (sjf_display[i] > 0) 
+        if (sjf_display[i] > 0) {
             printf("\033[0;3%dmP%d\033[0m", (sjf_display[i] % 6) + 1, sjf_display[i]);
-        else printf("   ");
+            printf(" "); // Ajouter 1 espace après pour avoir 3 caractères au total
+        } else {
+            printf("   "); // 3 espaces
+        }
     }
     printf("\n");
     
@@ -482,7 +494,7 @@ void afficher_gantt(t_processus* tableau, int nb_processus) {
     }
     printf("\n");
     
-    // ET ici , on oublie aps de  tout libérer
+    // ET ici, on oublie pas de tut libérer
     free(exec_fcfs);
     free(exec_sjf);
     
@@ -490,4 +502,6 @@ void afficher_gantt(t_processus* tableau, int nb_processus) {
     free(sjf_display);
     free(arr_display);
 }
+
+
 
