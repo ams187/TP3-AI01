@@ -228,8 +228,7 @@ int lsorted_vide(t_processus* liste) {
     return (liste == NULL);
 }
 
-/* Complexite : O(k) ou k = taille actuelle de la liste
- * Pire cas : O(n) */
+/* Complexite : O(n) ou n = taille actuelle de la liste */
 t_processus* lsorted_inserer_trie(t_processus* liste, t_processus* p) {
     if (p == NULL) return liste;
     
